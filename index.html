@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>FitnessPro | لوحة التحكم الرياضية</title>
+  <link rel="stylesheet" href="css/app.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body class="bg-matte text-gray-400">
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="p-6 border-b border-dark-border flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-xl font-bold text-white glow-blue shrink-0" style="background:linear-gradient(135deg,#3b82f6,#06b6d4)">💪</div>
+    <div>
+      <h1 class="text-lg font-bold text-white leading-tight">Fitness<span class="text-neon-blue">Pro</span></h1>
+      <p class="text-xs text-gray-500">لوحة التحكم الرياضية</p>
+    </div>
+  </div>
+  <nav class="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+    <a href="#" class="nav-link active" onclick="navigateTo('dashboard',this);return false;">📊 لوحة التحكم</a>
+    <a href="#" class="nav-link" onclick="navigateTo('exercises',this);return false;">🏋️ دفتر التمارين</a>
+    <a href="#" class="nav-link" onclick="navigateTo('nutrition',this);return false;">🥗 تتبع الغذاء</a>
+    <a href="#" class="nav-link" onclick="navigateTo('sleep',this);return false;">😴 النوم والأهداف</a>
+    <a href="#" class="nav-link" onclick="navigateTo('achievements',this);return false;">🏅 الإنجازات</a>
+    <a href="#" class="nav-link" onclick="navigateTo('settings',this);return false;">⚙️ الإعدادات</a>
+  </nav>
+  <div class="p-4 border-t border-dark-border text-center text-xs text-gray-600">جميع البيانات محفوظة محليًا 🔒</div>
+</aside>
+
+<!-- Hamburger -->
+<button class="hamburger-btn lg:hidden" onclick="toggleSidebar()">☰</button>
+
+<!-- Main Content -->
+<main class="main-content" id="mainContent">
+
+  <!-- ===== DASHBOARD ===== -->
+  <section id="section-dashboard" class="section-content">
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-white">👋 مرحبًا بك في لوحة التحكم</h2>
+      <p class="text-gray-500 mt-1" style="font-size:14px">ملخص شامل لنشاطك الرياضي والصحي</p>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-2 gap-4 mb-6" id="statCardsContainer" style="grid-template-columns:repeat(2,1fr)"></div>
+
+    <!-- Status Bars -->
+    <div class="grid grid-cols-1 gap-4 mb-6">
+      <div class="bg-dark-card border border-dark-border rounded-2xl p-5">
+        <div class="flex justify-between items-center mb-2">
+          <span style="font-size:14px;font-weight:600;color:#fff">💪 القوة</span>
+          <span style="font-size:14px;color:var(--neon-blue);font-weight:700" id="powerVal">0%</span>
+        </div>
+        <div class="bg-dark-border rounded-full overflow-hidden" style="height:12px">
+          <div id="powerBar" style="height:100%;width:0%;border-radius:9999px;background:linear-gradient(90deg,#3b82f6,#6366f1);transition:width 0.7s ease"></div>
+        </div>
+      </div>
+      <div class="bg-dark-card border border-dark-border rounded-2xl p-5">
+        <div class="flex justify-between items-center mb-2">
+          <span style="font-size:14px;font-weight:600;color:#fff">🫁 التحمل</span>
+          <span style="font-size:14px;color:var(--neon-green);font-weight:700" id="staminaVal">0%</span>
+        </div>
+        <div class="bg-dark-border rounded-full overflow-hidden" style="height:12px">
+          <div id="staminaBar" style="height:100%;width:0%;border-radius:9999px;background:linear-gradient(90deg,#22c55e,#10b981);transition:width 0.7s ease"></div>
+        </div>
+      </div>
+      <div class="bg-dark-card border border-dark-border rounded-2xl p-5">
+        <div class="flex justify-between items-center mb-2">
+          <span style="font-size:14px;font-weight:600;color:#fff">📅 الاستمرارية</span>
+          <span style="font-size:14px;color:var(--neon-cyan);font-weight:700" id="consistencyVal">0%</span>
+        </div>
+        <div class="bg-dark-border rounded-full overflow-hidden" style="height:12px">
+          <div id="consistencyBar" style="height:100%;width:0%;border-radius:9999px;background:linear-gradient(90deg,#06b6d4,#3b82f6);transition:width 0.7s ease"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Quests -->
+    <div class="bg-dark-card border border-dark-border rounded-2xl p-5 mb-6">
+      <h3 class="text-lg font-bold text-white mb-4">🎯 المهام اليومية</h3>
+      <div class="grid grid-cols-2 gap-3" id="dailyQuestsContainer"></div>
+      <p class="text-xs text-gray-500 mt-2 text-center" id="questsBonusMsg"></p>
+    </div>
+
+    <!-- Weight Chart + Input -->
+    <div class="grid grid-cols-1 gap-6">
+      <div class="bg-dark-card border border-dark-border rounded-2xl p-5">
+        <h3 class="text-lg font-bold text-white mb-4">📈 تقدم الوزن</h3>
+        <div style="position:relative;height:250px"><canvas id="weightChart"></canvas></div>
+        <p class="text-xs text-gray-500 text-center mt-2" id="chartEmptyMsg">لا توجد بيانات وزن حتى الآن</p>
+      </div>
+      <div class="bg-dark-card border border-dark-border rounded-2xl p-5">
+        <h3 class="text-lg font-bold text-white mb-4">⚖️ تسجيل الوزن</h3>
+        <label style="font-size:13px;color:#9ca3af;display:block;margin-bottom:8px">الوزن الحالي (كجم)</label>
+        <input type="number" id="weightInput" placeholder="مثال: 75.5" step="0.1" min="30" max="250" style="margin-bottom:12px">
+        <button onclick="saveWeight()" style="width:100%;background:var(--neon-blue);color:#fff;font-weight:700;padding:12px;border-radius:12px;font-size:15px" class="btn-hover glow-blue">💾 حفظ الوزن</button>
+        <p class="text-xs text-gray-500 mt-3 text-center" id="lastWeightNote"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== EXERCISES ===== -->
+  <section id="section-exercises" class="section-content hidden">
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-white">🏋️ دفتر التمارين</h2>
+      <p style="font-size:14px;color:#6b7280;margin-top:4px">سجل تمارينك وتتبع تقدمك</p>
+    </div>
+    <div class="bg-dark-card border border-dark-border rounded-2xl p-5 mb-6">
+      <h3 class="text-lg font-bold text-white mb-4">➕ إضافة تمرين جديد</h3>
+      <div class="grid grid-cols-2 gap-3">
+        <input type="text" id="exName" placeholder="اسم التمرين" style="grid-column:span 2">
+        <input type="number" id="exWeight" placeholder="الوزن (كجم)" step="0.5" min="0">
+        <input type="number" id="exSets" placeholder="المجموعات" min="1" value="3">
+        <input type="number" id="exReps" placeholder="التكرارات" min="1" value="10">
+        <button onclick="addExercise()" style="background:var(--neon-green);color:#000;font-weight:700;padding:12px;border-radius:12px" class="btn-hover glow-green">✅ إضافة</button>
+      </div>
+    </div>
+    <div class="bg-dark-card border border-dark-border rounded-2xl p-5">
+      <div class="flex justify-between items-center mb-4" style="flex-wrap:wrap;gap:12px">
+        <h3 class="text-lg font-bold text-white">📋 سجل التمارين</h3>
+        <input type="text" id="exSearch" placeholder="🔍 بحث..." style="width:200px" oninput="renderExerciseTable()">
+      </div>
+      <div class="overflow-x-auto">
+        <table style="width:100%;font-size:13px">
+          <thead>
+            <tr style="color:#6b7280;border-bottom:1px solid var(--dark-border)">
+              <th style="text-align:right;padding:10px 8px">التاريخ</th>
+              <th style="text-align:right;padding:10px 8px">التمرين</th>
+              <th style="text-align:right;padding:10px 8px">الوزن</th>
+              <th style="text-align:right;padding:10px 8px">م.</th>
+              <th style="text-align:right;padding:10px 8px">ت.</th>
+              <th style="text-align:right;padding:10px 8px">حذف</th>
+            </tr>
+          </thead>
+          <tbody id="exerciseTableBody">
+            <tr><td colspan="6" style="text-align:center;padding:32px;color:#6b7280">لا توجد تمارين مسجلة بعد</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== NUTRITION ===== -->
+  <section id="section-nutrition" class="section-content hidden">
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-white">🥗 تتبع الغذاء</h2>
+      <p style="font-size:14px;color:#6b7280;margin-top:4px">راقب سعراتك الحرارية</p>
+    </div>
+    <div class="bg-dark-card border border-dark-border rounded-2xl p-5 mb-6">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-lg font-bold text-white">🔥 عداد السعرات</h3>
+        <span style="font-size:13px;color:#9ca3af" id="calGoalDisplay">الهدف: 2500</span>
+      </div>
+      <div class="bg-dark-border rounded-full overflow-hidden mb-3" style="height:20px">
+        <div class="progress-bar-fill" id="calorieProgressBar" style="width:0%;height:100%"></div>
+      </div>
+      <div class="flex justify-between" style="font-size:14px">
+        <span style="color:var(--neon-blue);font-weight:700" id="calConsumed">0 سعرة</span>
+        <span style="color:#6b7280" id="calRemaining">متبقي: 2500</span>
+      </div>
+      <div class="flex gap-3 mt-4" style="flex-wrap:wrap">
+        <button onclick="quickAddCalories(500)" style="background:var(--dark-card2);border:1px solid var(--dark-border);color:#fff;font-weight:600;padding:10px 18px;border-radius:12px" class="btn-hover">+500 🍔</button>
+        <button onclick="quickAddCalories(1000)" style="background:var(--dark-card2);border:1px solid var(--dark-border);color:#fff;font-weight:600;padding:10px 18px;border-radius:12px" class="btn-hover">+1000 🍕</button>
+      </div>
+    </div>
+    <div class="bg-dark-card border border-dark-border rounded-2xl p-5 mb-6">
+      <h3 class="text-lg font-bold text-white mb-4">📝 تسجيل وجبة</h3>
+      <div class="grid grid-cols-1 gap-3">
+        <input type="text" id="mealName" placeholder="اسم الوجبة">
+        <input type="number" id="mealCalories" placeholder="السعرات الحرارية" min="1">
+        <button onclick="addMeal()" style="background:var(--neon-green);color:#000;font-weight:700;padding:12px;border-radius:12px" class="btn-hover glow-green">✅ تسجيل</button>
+      </div>
+    </div>
+    <div class="bg-dark-card border border-dark-border rounded-2xl p-5">
+      <h3 class="text-lg font-bold text-white mb-4">📋 وجبات اليوم</h3>
+      <div class="space-y-2 max-h-72 overflow-y-auto" id="mealList"></div>
+    </div>
+  </section>
+
+  <!-- ===== SLEEP & GOALS ===== -->
+  <section id="section-sleep" class="section-content hidden">
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-white">😴 النوم والأهداف</h2>
+    </div>
+    <div class="grid grid-cols-1 gap-6">
+      <div class="bg-dark-card border border-dark-border rounded-2xl p-5">
+        <h3 class="text-lg font-bold text-white mb-4">🛏️ تسجيل النوم</h3>
+        <label style="font-size:13px;color:#9ca3af;display:block;margin-bottom:8px">ساعات النوم</label>
+        <input type="number" id="sleepHours" placeholder="مثال: 7.5" step="0.5" min="0" max="24" style="margin-bottom:12px">
+        <label style="font-size:13px;color:#9ca3af;display:block;margin-bottom:8px">جودة النوم (1-5)</label>
+        <div class="flex gap-2 mb-4" id="qualityStars">
+          <button onclick="setSleepQuality(1)" class="quality-star" style="width:44px;height:44px;border-radius:12px;background:var(--dark-card2);border:1px solid var(--dark-border);font-size:20px">⭐</button>
+          <button onclick="setSleepQuality(2)" class="quality-star" style="width:44px;height:44px;border-radius:12px;background:var(--dark-card2);border:1px solid var(--dark-border);font-size:20px">⭐</button>
+          <button onclick="setSleepQuality(3)" class="quality-star" style="width:44px;height:44px;border-radius:12px;background:var(--dark-card2);border:1px solid var(--dark-border);font-size:20px">⭐</button>
+          <button onclick="setSleepQuality(4)" class="quality-star" style="width:44px;height:44px;border-radius:12px;background:var(--dark-card2);border:1px solid var(--dark-border);font-size:20px">⭐</button>
+          <button onclick="setSleepQuality(5)" class="quality-star" style="width:44px;height:44px;border-radius:12px;background:var(--dark-card2);border:1px solid var(--dark-border);font-size:20px">⭐</button>
+        </div>
+        <input type="hidden" id="sleepQualityVal" value="3">
+        <button onclick="logSleep()" style="width:100%;background:var(--neon-cyan);color:#000;font-weight:700;padding:12px;border-radius:12px" class="btn-hover glow-cyan">💤 تسجيل النوم</button>
+        <div class="mt-4 space-y-2 max-h-48 overflow-y-auto" id="sleepHistory"></div>
+      </div>
+      <div class="bg-dark-card border border-dark-border rounded-2xl p-5">
+        <h3 class="text-lg font-bold text-white mb-4">🎯 قائمة الأهداف</h3>
+        <div class="flex gap-2 mb-4" style="flex-wrap:wrap">
+          <input type="text" id="goalName" placeholder="اسم الهدف" style="flex:1;min-width:120px">
+          <input type="number" id="goalTarget" placeholder="المستهدف" min="1" style="width:100px">
+          <button onclick="addGoal()" style="background:var(--neon-blue);color:#fff;font-weight:700;padding:12px 16px;border-radius:12px" class="btn-hover glow-blue">➕</button>
+        </div>
+        <div class="space-y-3 max-h-80 overflow-y-auto" id="goalsList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ACHIEVEMENTS ===== -->
+  <section id="section-achievements" class="section-content hidden">
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-white">🏅 الإنجازات</h2>
+      <p style="font-size:14px;color:#6b7280;margin-top:4px">الإنجازات التي حققتها</p>
+    </div>
+    <div class="grid grid-cols-1 gap-4" id="achievementsList"></div>
+  </section>
+
+  <!-- ===== SETTINGS ===== -->
+  <section id="section-settings" class="section-content hidden">
+    <div class="mb-6"><h2 class="text-2xl font-bold text-white">⚙️ الإعدادات</h2></div>
+    <div class="bg-dark-card border border-dark-border rounded-2xl p-6 space-y-6">
+      <div class="flex gap-3" style="flex-wrap:wrap">
+        <button onclick="exportData()" style="background:var(--neon-blue);color:#fff;font-weight:700;padding:12px 20px;border-radius:12px" class="btn-hover glow-blue">📤 تصدير البيانات</button>
+        <button onclick="importDataPrompt()" style="background:var(--neon-cyan);color:#000;font-weight:700;padding:12px 20px;border-radius:12px" class="btn-hover glow-cyan">📥 استيراد البيانات</button>
+        <button onclick="resetData()" style="background:#dc2626;color:#fff;font-weight:700;padding:12px 20px;border-radius:12px" class="btn-hover">🗑️ مسح جميع البيانات</button>
+      </div>
+      <p style="font-size:13px;color:#9ca3af">حجم التخزين: <span id="storageSize">0 ك.ب</span></p>
+      <p style="font-size:12px;color:#6b7280">البيانات محفوظة محليًا ولا تغادر جهازك أبدًا.</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- Level Up Modal -->
+<div id="levelUpModal" style="display:none" class="modal-overlay">
+  <div class="modal-box">
+    <div style="font-size:60px;margin-bottom:16px">🎉</div>
+    <h2 class="text-2xl font-bold text-white mb-2">تهانينا! ارتقيت في المستوى!</h2>
+    <p style="font-size:18px;font-weight:700;margin-bottom:16px" class="text-glow-blue" id="levelUpMsg">المستوى الجديد: 2</p>
+    <button onclick="closeLevelUpModal()" style="background:var(--neon-blue);color:#fff;font-weight:700;padding:12px 32px;border-radius:12px;font-size:16px" class="btn-hover glow-blue">🚀 استمر!</button>
+  </div>
+</div>
+
+</body>
+</html>
